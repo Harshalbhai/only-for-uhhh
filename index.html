@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy 18th Birthday Riya!</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --pink: #ff85a2;
+            --dark-pink: #f73363;
+            --gold: #ffd700;
+            --cadbury: #6332b3; /* More elegant purple */
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: radial-gradient(circle, #fff0f3 0%, #f3e5f5 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Sparkle Trail */
+        .sparkle {
+            position: absolute; width: 6px; height: 6px;
+            background: var(--gold); border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+        }
+
+        /* Falling Items */
+        .falling-item {
+            position: fixed; font-size: 24px; user-select: none; z-index: -1;
+            top: -50px; animation: fall linear forwards;
+        }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+        #typing-text {
+            font-size: clamp(1.8rem, 8vw, 3.5rem); 
+            color: var(--dark-pink);
+            font-weight: bold; text-shadow: 2px 2px 10px rgba(247, 51, 99, 0.2);
+            margin-bottom: 20px; min-height: 4.5rem; text-align: center;
+            padding: 0 10px;
+        }
+
+        /* Surprise Container */
+        #surprise {
+            display: none; position: relative; text-align: center; 
+            animation: fadeIn 2s; padding: 30px; 
+            width: 85%; max-width: 500px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 30px; backdrop-filter: blur(10px);
+            border: 2px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        #poem-display {
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            line-height: 1.6; color: #333;
+            white-space: pre-line; font-style: italic; margin: 15px 0;
+        }
+
+        /* Mobile-Ready Side Teddies */
+        .party-teddy {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: clamp(40px, 12vw, 75px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 100;
+        }
+        .teddy-left { left: -50px; }
+        .teddy-right { right: -50px; }
+
+        .instrument { font-size: 0.6em; animation: shake 0.5s infinite; }
+
+        @media (max-width: 700px) {
+            .teddy-left { left: -25px; }
+            .teddy-right { right: -25px; }
+            #surprise { width: 70%; }
+        }
+
+        @keyframes shake { 
+            0% { transform: rotate(10deg); } 
+            50% { transform: rotate(20deg); } 
+            100% { transform: rotate(10deg); } 
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes dance { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+
+        .teddy { font-size: 45px; display: inline-block; animation: dance 1s infinite alternate; }
+
+        button {
+            padding: 16px 40px; font-size: 1.2rem;
+            background: linear-gradient(45deg, var(--dark-pink), var(--pink));
+            color: white; border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(247, 51, 99, 0.3);
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="typing-text"></div>
+
+    <div id="start-screen">
+        <button onclick="startCelebration()">Enter Riya's World 🌸</button>
+    </div>
+
+    <div id="gift-section" class="hidden">
+        <div class="gift-container" onclick="openGift()" style="text-align: center;">
+            <div style="width:140px; height:140px; background:var(--cadbury); border-radius:15px; margin:auto; position:relative;">
+                <div style="position:absolute; width:30px; height:100%; background:var(--gold); left:50%; transform:translateX(-50%);"></div>
+                <div style="position:absolute; height:30px; width:100%; background:var(--gold); top:50%; transform:translateY(-50%);"></div>
+            </div>
+            <p style="color: var(--cadbury); font-weight: bold; margin-top: 20px;">Tap to open your gift! 🍫</p>
+        </div>
+    </div>
+
+    <div id="surprise">
+        <div class="party-teddy teddy-left">
+            <span>🧸</span><span class="instrument">🎺</span>
+        </div>
+
+        <h2 style="color: var(--cadbury); margin: 0; font-size: 1.8rem;">👑 Happy 18th, Dear Riya! 👑</h2>
+        <div id="poem-display"></div>
+        
+        <div style="margin: 15px 0;">
+            <div class="teddy">🧸</div>
+            <div class="teddy" style="animation-delay: 0.3s">🧸</div>
+            <div class="teddy">🧸</div>
+        </div>
+
+        <div class="party-teddy teddy-right">
+            <span>🧸</span><span class="instrument">🎷</span>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop><source src="https://www.chosic.com/wp-content/uploads/2021/04/Romantic-Piano-Music.mp3" type="audio/mpeg"></audio>
+    <audio id="hbd-song"><source src="music.mp3" type="audio/mpeg"></audio>
+
+    <script>
+        const createSparkle = (x, y) => {
+            const s = document.createElement('div');
+            s.className = 'sparkle'; s.style.left = x + 'px'; s.style.top = y + 'px';
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 800);
+        };
+        document.addEventListener('mousemove', (e) => createSparkle(e.pageX, e.pageY));
+        document.addEventListener('touchmove', (e) => createSparkle(e.touches[0].pageX, e.touches[0].pageY));
+
+        const titleName = "Happy Birthday  Riya... ❤️";
+        const poemText = `You are not just growing older,
+You are growing more beautiful and stronger 💖
+
+May your life be filled with love,
+smiles, and endless happiness ✨
+
+Happy 18th Birthday Riya 🎂
+truly special 🌸`;
+
+        let i = 0, p = 0;
+        function typeWriter() {
+            if (i < titleName.length) {
+                document.getElementById("typing-text").innerHTML += titleName.charAt(i);
+                i++; setTimeout(typeWriter, 120);
+            }
+        }
+        function typePoem() {
+            if (p < poemText.length) {
+                document.getElementById("poem-display").innerHTML += poemText.charAt(p);
+                p++; setTimeout(typePoem, 70);
+            }
+        }
+
+        function createFallingItem() {
+            const items = ['❤️', '🍫', '💖', '✨'];
+            const item = document.createElement("div");
+            item.className = "falling-item";
+            item.innerHTML = items[Math.floor(Math.random() * items.length)];
+            item.style.left = Math.random() * 100 + "vw";
+            item.style.animationDuration = Math.random() * 3 + 2 + "s";
+            document.body.appendChild(item);
+            setTimeout(() => item.remove(), 5000);
+        }
+
+        function startCelebration() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('gift-section').classList.remove('hidden');
+            document.getElementById('bg-music').play();
+            typeWriter();
+            setInterval(createFallingItem, 500);
+        }
+
+        function openGift() {
+            document.getElementById('gift-section').classList.add('hidden');
+            document.getElementById('surprise').style.display = 'block';
+            document.getElementById('bg-music').pause();
+            document.getElementById('hbd-song').play();
+            typePoem();
+            var end = Date.now() + (25 * 1000);
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#6332b3', '#ffd700', '#f73363'] });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#6332b3', '#ffd700', '#f73363'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    </script>
+</body>
+</html>
